@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIA | SGCN Colmédica - Aliansalud</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand-container">
+        <div class="brand-logo-mock">CM</div>
+        <div class="brand-text">
+          <h1>Colmédica</h1>
+          <span>SGCN — BIA Digital</span>
+        </div>
+      </div>
+      
+      <nav class="menu-list">
+        <li class="menu-item active" id="menu-dashboard">
+          <button onclick="switchView('dashboard')">
+            <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Dashboard
+          </button>
+        </li>
+        <li class="menu-item" id="menu-bia">
+          <button onclick="switchView('bia')">
+            <svg viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Matriz de Procesos (BIA)
+          </button>
+        </li>
+        <li class="menu-item" id="menu-apps">
+          <button onclick="switchView('apps')">
+            <svg viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Riesgo de Aplicativos
+          </button>
+        </li>
+        <li class="menu-item" id="menu-suppliers">
+          <button onclick="switchView('suppliers')">
+            <svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Proveedores Críticos
+          </button>
+        </li>
+        <li class="menu-item" id="menu-history">
+          <button onclick="switchView('history')">
+            <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Historial de Auditoría
+          </button>
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-badge" onclick="cambiarNombreUsuario()" title="Clic para cambiar su nombre en el registro de auditoría" style="cursor:pointer;">
+          <div class="avatar" id="sidebar-user-avatar">??</div>
+          <div class="user-info">
+            <span class="user-name" id="sidebar-user-name">Cargando...</span>
+            <span class="user-role">Clic para cambiar nombre ✏️</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN APP SCREEN -->
+    <main class="main-workspace">
+      
+      <!-- TOP ACTION BAR -->
+      <header class="top-header">
+        <div class="header-title-section">
+          <h2 id="view-title">Dashboard General</h2>
+          <p id="view-subtitle">Resumen ejecutivo del estado del SGCN y criticidades.</p>
+        </div>
+        
+        <div class="header-actions">
+          <button class="btn-icon" onclick="toggleTheme()" title="Cambiar Tema (Claro/Oscuro)">
+            <svg id="theme-icon" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+          </button>
+          
+          <button class="btn-secondary" onclick="document.getElementById('json-file-input').click()" title="Importar base de datos consolidada (JSON)">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            Importar JSON
+          </button>
+          <input type="file" id="json-file-input" style="display:none;" accept=".json" onchange="importarBaseDatos(event)">
+          
+                <button class="btn-secondary" onclick="exportarBaseDatos()" title="Exportar base de datos consolidada (JSON)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        Exportar JSON
+      </button>
+      <button class="btn-secondary" onclick="restaurarDatosDemo()" title="Restaurar datos de prueba iniciales">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        Restaurar Demo
+      </button>
+
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            Exportar JSON
+          </button>
+          
+          <button class="btn-primary" id="btn-add-primary" onclick="abrirCreadorDinamico()">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            Nuevo Registro
+          </button>
+        </div>
+      </header>
+
+      <!-- DYNAMIC FRAMES -->
+      <div class="content-frame">
+        
+        <!-- SECTION 1: DASHBOARD -->
+        <section id="section-dashboard" class="content-section active">
+          
+          <!-- Summary Cards -->
+          <div class="dashboard-summary-grid">
+            <div class="stat-card">
+              <div class="stat-icon-container">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+              </div>
+              <div class="stat-info-text">
+                <h4>Procesos BIA</h4>
+                <p id="stat-total-processes">0</p>
+              </div>
+            </div>
+            
+            <div class="stat-card stat-green">
+              <div class="stat-icon-container">
+                <svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+              </div>
+              <div class="stat-info-text">
+                <h4>Procesos Críticos</h4>
+                <p id="stat-critical-processes">0</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon-container">
+                <svg viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+              </div>
+              <div class="stat-info-text">
+                <h4>Aplicaciones</h4>
+                <p id="stat-total-apps">0</p>
+              </div>
+            </div>
+            
+            <div class="stat-card stat-green">
+              <div class="stat-icon-container">
+                <svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+              </div>
+              <div class="stat-info-text">
+                <h4>Proveedores</h4>
+                <p id="stat-total-suppliers">0</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Charts Section -->
+          <div class="dashboard-charts-grid">
+            <div class="chart-card">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                Tiempos de RTO Declarados (Consolidado)
+              </h3>
+              <div class="chart-content" id="rto-chart-container">
+                <!-- SVG injected dynamically in app.js -->
+              </div>
+            </div>
+            
+            <div class="chart-card">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v10l4 4"/></svg>
+                Criticidad de Procesos
+              </h3>
+              <div class="chart-content" id="criticality-donut-container">
+                <!-- SVG donut injected dynamically in app.js -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Summary Table -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Resumen General de Procesos BIA
+              </h3>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table" id="dashboard-process-table">
+                <thead>
+                  <tr>
+                    <th>Proceso</th>
+                    <th>Subproceso</th>
+                    <th>RTO Colmédica</th>
+                    <th>RTO Aliansalud</th>
+                    <th>MTPD Colmédica</th>
+                    <th>MTPD Aliansalud</th>
+                    <th>Última Actualización</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-process-tbody">
+                  <!-- Injected dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </section>
+
+        <!-- SECTION 2: BIA MATRIX DETAIL -->
+        <section id="section-bia" class="content-section">
+          
+          <!-- Dropdown process selector -->
+          <div class="panel-card" style="padding: 16px 24px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+              <div class="form-group" style="margin-bottom: 0; flex-grow: 1; max-width: 450px;">
+                <label for="bia-process-selector" style="font-size: 0.72rem;">Seleccionar Proceso para Análisis:</label>
+                <select id="bia-process-selector" class="form-select" onchange="cargarDetalleProceso(this.value)">
+                  <!-- Options generated dynamically -->
+                </select>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 14px;">
+                <button class="btn-secondary" id="btn-edit-process" onclick="abrirEditorBiaActual()">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Editar Ficha de Proceso
+                </button>
+                <button class="btn-primary" onclick="duplicarBiaActual()" style="background: linear-gradient(135deg, var(--aliansalud-green) 0%, #36601b 100%); box-shadow: 0 4px 10px var(--aliansalud-green-light);">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" stroke="currentColor"/></svg>
+                  Duplicar
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Process Generalities card -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Generalidades del Proceso
+              </h3>
+              <span class="colmedica-badge" id="badge-version-proceso">Versión 1</span>
+            </div>
+            
+            <div class="process-general-grid" id="process-general-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+          
+          <!-- Flow visualizer card -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                Interdependencia y Dependencias del Proceso (Flujo Operativo)
+              </h3>
+            </div>
+            <div class="flow-diagram-container" id="process-flow-container">
+              <!-- Dynamic diagram elements -->
+            </div>
+          </div>
+          
+          <!-- Dual Impact Matrices (Colmedica & Aliansalud) -->
+          <div class="panel-card" style="background-color: transparent; border: none; padding: 0; box-shadow: none;">
+            <div class="matrices-comparison-wrapper">
+              
+              <!-- Colmédica Matrix -->
+              <div class="matrix-container" id="matrix-colmedica-card">
+                <div class="matrix-header-brand">
+                  <h4 style="color: var(--colmedica-blue);">ANÁLISIS DE IMPACTO - COLMÉDICA</h4>
+                  <span class="colmedica-badge">Colmédica</span>
+                </div>
+                
+                <table class="matrix-table">
+                  <thead>
+                    <tr>
+                      <th>Impactos</th>
+                      <th>1 día</th>
+                      <th>3 días</th>
+                      <th>1 semana</th>
+                      <th>1 mes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="matrix-colmedica-tbody">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+                
+                <div class="matrix-key-metrics">
+                  <div class="metric-box metric-rto">
+                    <label>RTO Proceso</label>
+                    <span id="metric-colmedica-rto">24 horas</span>
+                  </div>
+                  <div class="metric-box">
+                    <label>RPO Proceso</label>
+                    <span id="metric-colmedica-rpo">N/A</span>
+                  </div>
+                  <div class="metric-box metric-mtpd">
+                    <label>MTPD Proceso</label>
+                    <span id="metric-colmedica-mtpd">72 horas</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Aliansalud Matrix -->
+              <div class="matrix-container aliansalud-theme" id="matrix-aliansalud-card">
+                <div class="matrix-header-brand">
+                  <h4 style="color: var(--aliansalud-green);">ANÁLISIS DE IMPACTO - ALIANSALUD</h4>
+                  <span class="aliansalud-badge">Aliansalud</span>
+                </div>
+                
+                <table class="matrix-table">
+                  <thead>
+                    <tr>
+                      <th>Impactos</th>
+                      <th>1 día</th>
+                      <th>3 días</th>
+                      <th>1 semana</th>
+                      <th>1 mes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="matrix-aliansalud-tbody">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+                
+                <div class="matrix-key-metrics">
+                  <div class="metric-box metric-rto">
+                    <label>RTO Proceso</label>
+                    <span id="metric-aliansalud-rto">24 horas</span>
+                  </div>
+                  <div class="metric-box">
+                    <label>RPO Proceso</label>
+                    <span id="metric-aliansalud-rpo">N/A</span>
+                  </div>
+                  <div class="metric-box metric-mtpd">
+                    <label>MTPD Proceso</label>
+                    <span id="metric-aliansalud-mtpd">48 horas</span>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </section>
+
+        <!-- SECTION 3: APPLICATIONS -->
+        <section id="section-apps" class="content-section">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Actualización de Riesgo en Aplicativos & TI
+              </h3>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="custom-table" id="apps-table">
+                <thead>
+                  <tr>
+                    <th>Proceso / Subproceso</th>
+                    <th>Aplicación</th>
+                    <th>Frecuencia</th>
+                    <th>RTO Máx App</th>
+                    <th>Dependencias Clave</th>
+                    <th>Estrategia Principal</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="apps-tbody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: SUPPLIERS -->
+        <section id="section-suppliers" class="content-section">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                Registro General de Proveedores Críticos
+              </h3>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="custom-table" id="suppliers-table">
+                <thead>
+                  <tr>
+                    <th>Proceso / Subproceso</th>
+                    <th>Proveedor</th>
+                    <th>Servicio Prestado</th>
+                    <th>Representante & Suplente</th>
+                    <th>Impacto & Estrategia</th>
+                    <th>RTO Ofrecida</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="suppliers-tbody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: AUDIT LOG -->
+        <section id="section-history" class="content-section">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Trazabilidad Histórica & Cambios del BIA
+              </h3>
+            </div>
+            
+            <div class="timeline-wrapper" id="history-timeline-container">
+              <!-- Rendered automatically -->
+            </div>
+          </div>
+        </section>
+        
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALS CONTAINER -->
+  
+  <!-- 1. BIA PROCESS EDITOR MODAL -->
+  <div class="modal-overlay" id="modal-process-editor">
+    <div class="modal-window" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 id="process-modal-title">Registrar Nuevo Proceso BIA</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-process-editor')">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="form-process">
+          <input type="hidden" id="form-proc-id">
+          
+          <h4 style="font-family: var(--font-title); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px; color: var(--colmedica-blue);">1. Generalidades del Proceso</h4>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="form-proc-name">Nombre del Proceso</label>
+              <input type="text" id="form-proc-name" class="form-input" required placeholder="Ej: Autorizaciones Aliansalud y Colmédica">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-subname">Nombre del Subproceso</label>
+              <input type="text" id="form-proc-subname" class="form-input" required placeholder="Ej: Evaluación y Seguimiento Autorizaciones">
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="form-proc-desc">Descripción Completa del Proceso</label>
+              <textarea id="form-proc-desc" class="form-textarea" required placeholder="Detalle detalladamente el proceso, actividades primarias, etc."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-schedule">Horario de Funcionamiento</label>
+              <input type="text" id="form-proc-schedule" class="form-input" required placeholder="Ej: Lunes a Viernes 7:30am a 5pm">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-workers">Número de Trabajadores (Sede vs. Teletrabajo)</label>
+              <input type="text" id="form-proc-workers" class="form-input" required placeholder="Ej: 8 (5 en sede y 3 Teletrabajo)">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-location">Ubicación donde se ejecuta</label>
+              <input type="text" id="form-proc-location" class="form-input" required placeholder="Ej: Bogotá, Calle 63 y Trabajo en casa">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-peaks">Períodos de Actividad Máxima</label>
+              <input type="text" id="form-proc-peaks" class="form-input" required placeholder="Ej: Cierre de mes, fin de año, etc.">
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="form-proc-suppliers">Proveedores Externos de Apoyo</label>
+              <input type="text" id="form-proc-suppliers" class="form-input" placeholder="Ej: Emtelco (Call Center y WhatsApp)">
+            </div>
+          </div>
+          
+          <h4 style="font-family: var(--font-title); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 16px 0; color: var(--colmedica-blue);">2. Flujo de Interdependencia (Entradas/Salidas)</h4>
+          
+          <div class="form-grid" id="form-flow-row-container">
+            <div class="form-group">
+              <label for="form-flow-quien-da">¿Quién suministra la Entrada?</label>
+              <input type="text" id="form-flow-quien-da" class="form-input" placeholder="Subproceso, Área o Externo">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-entrada">Entrada (Input)</label>
+              <input type="text" id="form-flow-entrada" class="form-input" placeholder="Ej: Relación mensual de autorizaciones">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-medio-entrada">Aplicación/Medio de la Entrada</label>
+              <input type="text" id="form-flow-medio-entrada" class="form-input" placeholder="Ej: Huella - Módulo autorizaciones">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-actividad">Actividad principal (Trámite)</label>
+              <input type="text" id="form-flow-actividad" class="form-input" placeholder="Ej: Extracción y depuración de reportes">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-medio-req">Aplicación/Medio de Trámite</label>
+              <input type="text" id="form-flow-medio-req" class="form-input" placeholder="Ej: Huella - Módulo reportes">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-salida">Resultado (Salida)</label>
+              <input type="text" id="form-flow-salida" class="form-input" placeholder="Ej: Reporte de hallazgos con novedades">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-medio-salida">Aplicación/Medio de Salida</label>
+              <input type="text" id="form-flow-medio-salida" class="form-input" placeholder="Ej: Correo electrónico">
+            </div>
+            <div class="form-group">
+              <label for="form-flow-a-quien">¿A quién se dirige la Salida?</label>
+              <input type="text" id="form-flow-a-quien" class="form-input" placeholder="Subproceso, Área o Externo">
+            </div>
+          </div>
+          
+          <h4 style="font-family: var(--font-title); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 16px 0; color: var(--colmedica-blue);">3. Configuración de Parámetros BIA (Tiempos)</h4>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="form-proc-rto-col">RTO Colmédica (Recovery Time Objective)</label>
+              <input type="text" id="form-proc-rto-col" class="form-input" required placeholder="Ej: 24 horas">
+            </div>
+            <div class="form-group">
+              <label for="form-proc-mtpd-col">MTPD Colmédica (Max Tolerable Period of Disruption)</label>
+              <input type="text" id="form-proc-mtpd-col" class="form-input" required placeholder="Ej: 72 horas">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-proc-rto-ali">RTO Aliansalud</label>
+              <input type="text" id="form-proc-rto-ali" class="form-input" required placeholder="Ej: 24 horas">
+            </div>
+            <div class="form-group">
+              <label for="form-proc-mtpd-ali">MTPD Aliansalud</label>
+              <input type="text" id="form-proc-mtpd-ali" class="form-input" required placeholder="Ej: 48 horas">
+            </div>
+          </div>
+          
+          <div style="background-color: var(--colmedica-blue-light); padding: 14px; border-radius: var(--radius-sm); margin-top: 14px;">
+            <p style="font-size: 0.78rem; color: var(--text-main); font-weight: 600; line-height: 1.4;">
+              💡 <strong>Nota:</strong> Las matrices de calificación de impactos (Financiero, Operativo, Legal, Reputacional) se pueden editar de forma interactiva haciendo clic directamente sobre las celdas de la matriz BIA en la pantalla principal.
+            </p>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cerrarModal('modal-process-editor')">Cancelar</button>
+        <button class="btn-primary" onclick="guardarBiaProcess()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 2. APPLICATION EDITOR MODAL -->
+  <div class="modal-overlay" id="modal-app-editor">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="app-modal-title">Registrar Riesgo de Aplicativo</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-app-editor')">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="form-app">
+          <input type="hidden" id="form-app-id">
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="form-app-proc">Proceso Asociado</label>
+              <input type="text" id="form-app-proc" class="form-input" required placeholder="Ej: Servicio al cliente">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-subproc">Subproceso Asociado</label>
+              <input type="text" id="form-app-subproc" class="form-input" required placeholder="Ej: Central de Autorizaciones de Reclamos">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-name">Nombre del Aplicativo / Sistema</label>
+              <input type="text" id="form-app-name" class="form-input" required placeholder="Ej: HUELLA">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-frequency">Frecuencia de Uso del Sistema</label>
+              <select id="form-app-frequency" class="form-select">
+                <option value="Diaria">Diaria</option>
+                <option value="Semanal">Semanal</option>
+                <option value="Mensual">Mensual</option>
+                <option value="Bajo Demanda">Bajo Demanda</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-rto">RTO Máximo Permitido por TI (App)</label>
+              <input type="text" id="form-app-rto" class="form-input" required placeholder="Ej: 2 Horas">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-deps">Dependencias Clave (Otros Sistemas, Proveedores)</label>
+              <input type="text" id="form-app-deps" class="form-input" placeholder="Ej: Mipres, CNA, SOM">
+            </div>
+            
+            <div class="form-group full-width">
+              <label>Impactos Identificados en Caso de Interrupción</label>
+              <div class="checkbox-group-wrapper">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="app-impact" value="Daños a la reputación">
+                  Daños a la reputación
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="app-impact" value="Pérdidas de ingresos financieros">
+                  Pérdidas financieras
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="app-impact" value="Incumplimiento contractual">
+                  Incumplimiento contractual
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="app-impact" value="Operaciones - entregas no realizadas">
+                  Operaciones no realizadas
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="form-app-impact-desc">Explicar Impacto al Negocio Elegido</label>
+              <textarea id="form-app-impact-desc" class="form-textarea" placeholder="Describa el impacto exacto en la operación diaria de Colmédica..."></textarea>
+            </div>
+            
+            <div class="form-group full-width">
+              <label for="form-app-strategy-desc">Explicar a detalle Estrategia de Recuperación Elegida</label>
+              <textarea id="form-app-strategy-desc" class="form-textarea" placeholder="¿Cómo se reanudará el trabajo?"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-strategy-used">¿Estrategias de recuperación usadas antes?</label>
+              <select id="form-app-strategy-used" class="form-select">
+                <option value="Si">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-reanudacion-time">¿Cuándo se reanudará el trabajo?</label>
+              <input type="text" id="form-app-reanudacion-time" class="form-input" placeholder="Ej: 2 Horas">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-max-time">¿Cuánto tiempo se puede mantener operando manualmente?</label>
+              <input type="text" id="form-app-max-time" class="form-input" placeholder="Ej: 2 Horas">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-interrupted-percent">% Trabajo Acumulado Interrumpido</label>
+              <input type="text" id="form-app-interrupted-percent" class="form-input" placeholder="Ej: 1-25%">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-manual-percent">% Trabajo Acumulado Hecho Manualmente</label>
+              <input type="text" id="form-app-manual-percent" class="form-input" placeholder="Ej: 1-25%">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-app-alt-percent">% Trabajo Acumulado en Sistemas Alternativos</label>
+              <input type="text" id="form-app-alt-percent" class="form-input" placeholder="Ej: 1-25%">
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cerrarModal('modal-app-editor')">Cancelar</button>
+        <button class="btn-primary" onclick="guardarAplicativo()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 3. SUPPLIER EDITOR MODAL -->
+  <div class="modal-overlay" id="modal-supplier-editor">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="supplier-modal-title">Registrar Proveedor Crítico</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-supplier-editor')">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="form-supplier">
+          <input type="hidden" id="form-supplier-id">
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="form-supplier-proc">Proceso al cual está adscrito</label>
+              <input type="text" id="form-supplier-proc" class="form-input" required placeholder="Ej: Autorizaciones Médicas">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-subproc">Subproceso al cual está adscrito</label>
+              <input type="text" id="form-supplier-subproc" class="form-input" required placeholder="Ej: S.O.M.">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-name">Proveedor Requerido (Empresa)</label>
+              <input type="text" id="form-supplier-name" class="form-input" required placeholder="Ej: Emtelco">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-service">Servicios Prestados</label>
+              <input type="text" id="form-supplier-service" class="form-input" required placeholder="Ej: Call Center">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-schedule">Horario de Funcionamiento</label>
+              <input type="text" id="form-supplier-schedule" class="form-input" required placeholder="Ej: Lunes a Viernes 7:00 am a 5:30 pm">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-address">Dirección del Proveedor</label>
+              <input type="text" id="form-supplier-address" class="form-input" placeholder="Ej: Calle 52A # 85A - 61">
+            </div>
+            
+            <h5 style="grid-column: 1/-1; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 14px; font-family: var(--font-title); font-size: 0.9rem;">Contactos & Escalabilidad</h5>
+            
+            <div class="form-group">
+              <label for="form-supplier-contact-name">Punto de Contacto (Proveedor)</label>
+              <input type="text" id="form-supplier-contact-name" class="form-input" placeholder="Ej: Karen Pimiento Peña">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-contact-email">Correo Punto de Contacto</label>
+              <input type="email" id="form-supplier-contact-email" class="form-input" placeholder="Ej: contacto@prov.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-alt-name">Suplente del Punto de Contacto en Colmédica</label>
+              <input type="text" id="form-supplier-alt-name" class="form-input" placeholder="Ej: Juli Andrea Alarcón González">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-alt-email">Correo Suplente Colmédica</label>
+              <input type="email" id="form-supplier-alt-email" class="form-input" placeholder="Ej: suplente@colmedica.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-rep-name">Representante Comercial del Proveedor</label>
+              <input type="text" id="form-supplier-rep-name" class="form-input" placeholder="Ej: Maritza Garzón">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-rep-email">Correo Representante Proveedor</label>
+              <input type="email" id="form-supplier-rep-email" class="form-input" placeholder="Ej: comercial@prov.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="form-supplier-rep-suplente-name">Suplente del Representante del Proveedor</label>
+              <input type="text" id="form-supplier-rep-suplente-name" class="form-input" placeholder="Ej: Duván Ovidio Hernández">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-rep-suplente-email">Correo Suplente del Representante</label>
+              <input type="email" id="form-supplier-rep-suplente-email" class="form-input" placeholder="Ej: duvan@emtelco.com">
+            </div>
+            
+            <h5 style="grid-column: 1/-1; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 14px; font-family: var(--font-title); font-size: 0.9rem;">Impactos y Estrategias</h5>
+            
+            <div class="form-group">
+              <label for="form-supplier-impact">Impacto si proveedor no está disponible</label>
+              <input type="text" id="form-supplier-impact" class="form-input" placeholder="Ej: Financiero, Operativo">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-recovery">Estrategias de recuperación</label>
+              <input type="text" id="form-supplier-recovery" class="form-input" placeholder="Ej: Reproducir tareas manualmente">
+            </div>
+            <div class="form-group full-width">
+              <label for="form-supplier-recovery-details">Detalles estrateg. recuper. del proceso</label>
+              <textarea id="form-supplier-recovery-details" class="form-textarea" placeholder="Describa los detalles..."></textarea>
+            </div>
+            
+            <h5 style="grid-column: 1/-1; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-top: 14px; font-family: var(--font-title); font-size: 0.9rem;">Métricas de Tiempo y Trabajo</h5>
+            
+            <div class="form-group">
+              <label for="form-supplier-rto">RTO ofrecida por el proveedor</label>
+              <input type="text" id="form-supplier-rto" class="form-input" placeholder="Ej: 4 horas">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-work-percent">% de trabajo ejecutada p/ el proveedor?</label>
+              <input type="text" id="form-supplier-work-percent" class="form-input" placeholder="Ej: 26 - 50%">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-impl-time">Periodo implementación de solución</label>
+              <input type="text" id="form-supplier-impl-time" class="form-input" placeholder="Ej: 1 Horas">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-maintain-time">Período se puede mantener solución</label>
+              <input type="text" id="form-supplier-maintain-time" class="form-input" placeholder="Ej: 2 Horas">
+            </div>
+            <div class="form-group">
+              <label for="form-supplier-comm-tools">Herramientas comunic. del proveedor</label>
+              <input type="text" id="form-supplier-comm-tools" class="form-input" placeholder="Ej: Correo Electrónico / TEAMS">
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cerrarModal('modal-supplier-editor')">Cancelar</button>
+        <button class="btn-primary" onclick="guardarProveedor()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. AUDIT JUSTIFICATION MODAL -->
+  <div class="modal-overlay" id="modal-justification" style="z-index: 300;">
+    <div class="modal-window" style="max-width: 450px;">
+      <div class="modal-header">
+        <h3>Justificación del Cambio</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-justification')">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="form-justification-comment">Describa brevemente la razón de este cambio para el historial de auditoría:</label>
+          <textarea id="form-justification-comment" class="form-textarea" required placeholder="Ej: Se ajustó el RTO de acuerdo a la mesa de trabajo con TI y se actualizó el flujo de entrada..." style="min-height: 80px;"></textarea>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cerrarModal('modal-justification')">Cancelar</button>
+        <button class="btn-primary" id="btn-confirm-justification" style="background: linear-gradient(135deg, var(--aliansalud-green) 0%, #36601b 100%);">Confirmar Guardado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS SCRIPTS -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
