@@ -1465,6 +1465,27 @@ function toggleTheme() {
 // 📤 EXPORTACIÓN E IMPORTACIÓN DE BASE DE DATOS (JSON)
 // ----------------------------------------------------
 
+
+function restaurarDatosDemo() {
+  if (!confirm("¿Desea restaurar los datos de prueba iniciales? Esta acción sobrescribirá los cambios guardados localmente.")) {
+    return;
+  }
+
+  baseDatos = JSON.parse(JSON.stringify(BIA_INITIAL_DATA));
+  guardarDatosBIA(baseDatos);
+
+  if (baseDatos.procesos.length > 0) {
+    idProcesoActivo = baseDatos.procesos[0].id;
+  } else {
+    idProcesoActivo = '';
+  }
+
+  registrarAuditoria("Restauración demo", "Base inicial", "Se restauró la base de datos de prueba desde la plantilla oficial.");
+  inicializarUI();
+  switchView('dashboard');
+  alert("Datos de prueba restaurados correctamente.");
+}
+
 function exportarBaseDatos() {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(baseDatos, null, 2));
   const dlAnchorElem = document.createElement('a');

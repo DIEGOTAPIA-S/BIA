@@ -70,6 +70,50 @@ const BIA_INITIAL_DATA = {
       },
       fechaActualizacion: "2026-05-21",
       version: 1
+    },
+    {
+      id: "proc-2",
+      nombreProceso: "Autorizaciones Médicas",
+      nombreSubproceso: "S.O.M. - Soporte Operativo Médico",
+      descripcion: "Gestión operativa de autorizaciones médicas y soporte al proceso de servicio al cliente para continuidad de atención.",
+      horario: "Lunes a Viernes 7:00 am a 5:30 pm",
+      trabajadores: "6 (4 en sede y 2 teletrabajo)",
+      ubicacion: "Bogotá, operación híbrida",
+      periodosActividad: "Operación diaria con incremento en cierres de mes",
+      proveedoresApoyo: "Emtelco (Operación de Call Center y seguimiento de casos por WhatsApp)",
+      flujo: [
+        {
+          id: "flujo-2-1",
+          quienDaEntrada: "Servicio al cliente, CNA, SOM",
+          entrada: "Solicitudes de autorización y novedades operativas",
+          medioEntrada: "HUELLA / Correo corporativo",
+          actividad: "Validación, priorización y trazabilidad de solicitudes",
+          medioRequerido: "HUELLA - módulo operativo",
+          salida: "Autorizaciones gestionadas y reporte de novedades",
+          medioSalida: "Correo electrónico y carpeta compartida",
+          aQuienSeDirige: "Servicio al cliente y grupos autorizadores"
+        }
+      ],
+      impactoColmedica: {
+        financiero: ["moderado", "significativo", "significativo", "catastrofico"],
+        operacional: ["minimo", "moderado", "significativo", "catastrofico"],
+        legal: ["minimo", "moderado", "significativo", "catastrofico"],
+        reputacional: ["moderado", "significativo", "significativo", "catastrofico"],
+        rto: "4 horas",
+        rpo: "N/A",
+        mtpd: "24 horas"
+      },
+      impactoAliansalud: {
+        financiero: ["moderado", "significativo", "significativo", "catastrofico"],
+        operacional: ["minimo", "moderado", "significativo", "catastrofico"],
+        legal: ["minimo", "moderado", "significativo", "catastrofico"],
+        reputacional: ["moderado", "significativo", "significativo", "catastrofico"],
+        rto: "4 horas",
+        rpo: "N/A",
+        mtpd: "24 horas"
+      },
+      fechaActualizacion: "2026-05-21",
+      version: 1
     }
   ],
   
@@ -105,6 +149,35 @@ const BIA_INITIAL_DATA = {
       porcentajeTrabajoOtros: "1-25%",
       tipoEstrategiaAcumulado: ["Datos cargados manualmente"],
       explicacionEstrategiaAcumulado: "Se realiza la operación de forma manual y posteriormente se cargan los datos al formato xxxx",
+      fechaActualizacion: "2026-05-21",
+      version: 1
+    },
+    {
+      id: "app-2",
+      nombreProceso: "Autorizaciones Médicas",
+      nombreSubproceso: "S.O.M.",
+      aplicacion: "HUELLA - Módulo Reportes",
+      frecuencia: "Diaria",
+      rtoMaxApp: "4 Horas",
+      impactosInterrupcion: [
+        "Impacto financiero",
+        "Impacto operativo"
+      ],
+      explicacionImpacto: "Retrasos en autorizaciones y acumulación de casos por indisponibilidad del sistema.",
+      dependenciasClave: "CNA, SOM, proveedor Emtelco",
+      tipoEstrategia: [
+        "Trabajo llevado a cabo manualmente"
+      ],
+      explicacionEstrategia: "Se registra la gestión en formato manual y se carga al sistema cuando se restablece.",
+      estrategiasUsadasAntes: "Si",
+      cuandoReanudara: "1 Hora",
+      tiempoMantenerOperacion: "2 Horas",
+      porcentajeTrabajoInterrumpido: "26-50%",
+      porcentajeTrabajoManual: "26-50%",
+      porcentajeTrabajoAlternativos: "1-25%",
+      porcentajeTrabajoOtros: "1-25%",
+      tipoEstrategiaAcumulado: ["Datos cargados manualmente"],
+      explicacionEstrategiaAcumulado: "Se mantiene continuidad operativa manual con posterior cargue de datos.",
       fechaActualizacion: "2026-05-21",
       version: 1
     }
