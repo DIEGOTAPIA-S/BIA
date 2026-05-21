@@ -220,6 +220,7 @@
                 </select>
               </div>
               <div style="display: flex; gap: 12px; margin-top: 14px;">
+                <button class="btn-secondary" onclick="abrirModalNivelesImpacto()">Administrar niveles de impacto</button>
                 <button class="btn-secondary" id="btn-edit-process" onclick="abrirEditorBiaActual()">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   Editar Ficha de Proceso
@@ -425,6 +426,25 @@
         
       </div>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="modal-impact-levels">
+    <div class="modal-window" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3>Administrar niveles de impacto</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-impact-levels')">✕</button>
+      </div>
+      <div class="modal-body">
+        <button class="btn-primary" onclick="agregarNivelImpacto()" style="margin-bottom:12px;">Agregar nivel</button>
+        <table class="custom-table">
+          <thead><tr><th>ID</th><th>Etiqueta</th><th>Color</th><th>Orden</th><th>Acciones</th></tr></thead>
+          <tbody id="impact-levels-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="cerrarModal('modal-impact-levels')">Cerrar</button>
+      </div>
+    </div>
   </div>
 
   <!-- MODALS CONTAINER -->
