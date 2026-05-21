@@ -12,6 +12,14 @@ function obtenerNombreUsuario() {
 }
 
 const BIA_INITIAL_DATA = {
+  configuracion: {
+    nivelesImpacto: [
+      { id: "minimo", label: "Mínimo", color: "#10b981", orden: 1 },
+      { id: "moderado", label: "Moderado", color: "#eab308", orden: 2 },
+      { id: "significativo", label: "Significativo", color: "#f97316", orden: 3 },
+      { id: "catastrofico", label: "Catastrófico", color: "#ef4444", orden: 4 }
+    ]
+  },
   procesos: [
     {
       id: "proc-1",
@@ -156,6 +164,7 @@ function obtenerDatosBIA() {
       const parsed = JSON.parse(datosGuardados);
       // Migración: asegurar que snapshots exista en datos guardados
       if (!parsed.snapshots) parsed.snapshots = [];
+      migrarConfiguracionNivelesImpacto(parsed);
       return parsed;
     } catch (e) {
       console.error("Error cargando base de datos local, reinstanciando...", e);
@@ -164,6 +173,31 @@ function obtenerDatosBIA() {
   // Si no existe, guardar e inicializar
   guardarDatosBIA(BIA_INITIAL_DATA);
   return JSON.parse(JSON.stringify(BIA_INITIAL_DATA));
+}
+
+function migrarConfiguracionNivelesImpacto(datos) {
+  if (!datos.configuracion) datos.configuracion = {};
+  if (!Array.isArray(datos.configuracion.nivelesImpacto) || datos.configuracion.nivelesImpacto.length === 0) {
+    datos.configuracion.nivelesImpacto = JSON.parse(JSON.stringify(BIA_INITIAL_DATA.configuracion.nivelesImpacto));
+  }
+  const idsValidos = new Set(datos.configuracion.nivelesImpacto.map(n => n.id));
+  const fallbackId = datos.configuracion.nivelesImpacto.slice().sort((a, b) => a.orden - b.orden)[0]?.id || "minimo";
+  const legacyMap = { minimo: "minimo", moderado: "moderado", significativo: "significativo", catastrofico: "catastrofico" };
+  const normalizar = (valor) => {
+    if (idsValidos.has(valor)) return valor;
+    if (legacyMap[valor] && idsValidos.has(legacyMap[valor])) return legacyMap[valor];
+    return fallbackId;
+  };
+  (datos.procesos || []).forEach(p => {
+    ["impactoColmedica", "impactoAliansalud"].forEach(claveImpacto => {
+      const imp = p[claveImpacto];
+      if (!imp) return;
+      ["financiero", "operacional", "legal", "reputacional"].forEach(cat => {
+        if (!Array.isArray(imp[cat])) imp[cat] = [fallbackId, fallbackId, fallbackId, fallbackId];
+        imp[cat] = imp[cat].map(normalizar);
+      });
+    });
+  });
 }
 
 function guardarDatosBIA(datos) {

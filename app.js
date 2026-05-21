@@ -7,13 +7,16 @@ let vistaActiva = 'dashboard';
 let idProcesoActivo = '';
 let transicionGuardadoPendiente = null; // Almacena el callback de guardado antes de pedir justificación
 
-// Mapeo de colores y textos para niveles de impacto
-const NIVELES_IMPACTO = {
-  minimo: { texto: "Mínimo", clase: "minimo", color: "#10b981" },
-  moderado: { texto: "Moderado", clase: "moderado", color: "#eab308" },
-  significativo: { texto: "Significativo", clase: "significativo", color: "#f97316" },
-  catastrofico: { texto: "Catastrófico", clase: "catastrofico", color: "#ef4444" }
-};
+function getNivelesImpacto() {
+  const niveles = baseDatos?.configuracion?.nivelesImpacto || [];
+  return niveles.slice().sort((a, b) => a.orden - b.orden);
+}
+
+function getNivelImpactoMap() {
+  const map = {};
+  getNivelesImpacto().forEach(n => { map[n.id] = n; });
+  return map;
+}
 
 // Tiempos de interrupción (columnas)
 const COLUMNAS_TIEMPOS = [
@@ -522,12 +525,12 @@ function renderizarMatrizImpacto(tipo, impactosObj) {
     // 4 Columnas de tiempo
     COLUMNAS_TIEMPOS.forEach((col, idx) => {
       const nivel = impactosObj[fila.clave][idx] || "minimo";
-      const config = NIVELES_IMPACTO[nivel];
+      const config = getNivelImpactoMap()[nivel] || { label: nivel, color: "#94a3b8" };
       
       rowHTML += `
         <td>
-          <div class="matrix-cell ${config.clase}" onclick="ciclarImpacto('${tipo}', '${fila.clave}', ${idx})" title="Calificar Impacto. Clic para cambiar.">
-            ${config.texto}
+          <div class="matrix-cell" style="--impact-color: ${config.color};" onclick="ciclarImpacto('${tipo}', '${fila.clave}', ${idx})" title="Calificar Impacto. Clic para cambiar.">
+            ${config.label}
           </div>
         </td>
       `;
@@ -576,42 +579,6 @@ function renderizarMatrizImpacto(tipo, impactosObj) {
   document.getElementById(`metric-${tipo}-rpo`).textContent = impactosObj.rpo || "N/A";
   document.getElementById(`metric-${tipo}-mtpd`).textContent = impactosObj.mtpd || "No definido";
 }
-
-
-  
-  
-  tbody.innerHTML = "";
-  
-  FILAS_IMPACTOS.forEach(fila => {
-    const tr = document.createElement("tr");
-    
-    // Label de la fila
-    let rowHTML = `<td class="row-label">${fila.etiqueta}</td>`;
-    
-    // 4 Columnas de tiempo
-    COLUMNAS_TIEMPOS.forEach((col, idx) => {
-      const nivel = impactosObj[fila.clave][idx] || "minimo";
-      const config = NIVELES_IMPACTO[nivel];
-      
-      rowHTML += `
-        <td>
-          <div class="matrix-cell ${config.clase}" onclick="ciclarImpacto('${tipo}', '${fila.clave}', ${idx})" title="Calificar Impacto. Clic para cambiar.">
-            ${config.texto}
-          </div>
-        </td>
-      `;
-    });
-    
-    tr.innerHTML = rowHTML;
-    tbody.appendChild(tr);
-  });
-  
-  // Cargar RTO, RPO y MTPD en los cuadros inferiores
-  document.getElementById(`metric-${tipo}-rto`).textContent = impactosObj.rto || "No definido";
-  document.getElementById(`metric-${tipo}-rpo`).textContent = impactosObj.rpo || "N/A";
-  document.getElementById(`metric-${tipo}-mtpd`).textContent = impactosObj.mtpd || "No definido";
-}
-
 // Ciclar el nivel de impacto de una celda al hacer clic directamente en la matriz (Experto interactivo)
 function ciclarImpacto(tipo, categoriaKey, colIdx) {
   const p = baseDatos.procesos.find(proc => proc.id === idProcesoActivo);
@@ -620,11 +587,9 @@ function ciclarImpacto(tipo, categoriaKey, colIdx) {
   const impactos = tipo === 'colmedica' ? p.impactoColmedica : p.impactoAliansalud;
   const nivelActual = impactos[categoriaKey][colIdx];
   
-  // Ciclo: minimo -> moderado -> significativo -> catastrofico -> minimo
-  let siguienteNivel = "minimo";
-  if (nivelActual === "minimo") siguienteNivel = "moderado";
-  else if (nivelActual === "moderado") siguienteNivel = "significativo";
-  else if (nivelActual === "significativo") siguienteNivel = "catastrofico";
+  const ordenNiveles = getNivelesImpacto().map(n => n.id);
+  const idxActual = ordenNiveles.indexOf(nivelActual);
+  const siguienteNivel = ordenNiveles[(idxActual + 1) % ordenNiveles.length] || ordenNiveles[0];
   
   // Aplicar cambio
   impactos[categoriaKey][colIdx] = siguienteNivel;
@@ -635,13 +600,87 @@ function ciclarImpacto(tipo, categoriaKey, colIdx) {
   // Configurar el guardado para cuando se ingrese la justificación
   transicionGuardadoPendiente = () => {
     guardarDatosBIA(baseDatos);
-    registrarAuditoria(`Modificación de impacto (${NIVELES_IMPACTO[siguienteNivel].texto}) en ${tipo.toUpperCase()} - Categoría: ${categoriaKey} - Col: ${COLUMNAS_TIEMPOS[colIdx].etiqueta}`, p.nombreProceso);
+    registrarAuditoria(`Modificación de impacto (${(getNivelImpactoMap()[siguienteNivel]?.label || siguienteNivel)}) en ${tipo.toUpperCase()} - Categoría: ${categoriaKey} - Col: ${COLUMNAS_TIEMPOS[colIdx].etiqueta}`, p.nombreProceso);
     cargarDetalleProceso(idProcesoActivo);
     renderizarDashboard();
   };
   
   // Lanzar modal de justificación
   abrirModalJustificacion();
+}
+
+function abrirModalNivelesImpacto() {
+  renderizarTablaNivelesImpacto();
+  abrirModal("modal-impact-levels");
+}
+
+function renderizarTablaNivelesImpacto() {
+  const tbody = document.getElementById("impact-levels-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  getNivelesImpacto().forEach((nivel, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${nivel.id}</td><td>${nivel.label}</td><td><input type="color" value="${nivel.color}" onchange="editarColorNivel('${nivel.id}', this.value)"></td><td>${nivel.orden}</td><td style="display:flex;gap:6px;"><button class="btn-icon" onclick="moverNivel('${nivel.id}', -1)" ${idx===0?'disabled':''}>↑</button><button class="btn-icon" onclick="moverNivel('${nivel.id}', 1)" ${idx===getNivelesImpacto().length-1?'disabled':''}>↓</button><button class="btn-icon" onclick="eliminarNivelImpacto('${nivel.id}')">🗑️</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function registrarCambioCatalogoNiveles(antes, despues, accion) {
+  registrarAuditoria(`Catálogo niveles de impacto: ${accion}`, "Configuración", `Antes: ${JSON.stringify(antes)} | Después: ${JSON.stringify(despues)}`);
+}
+
+function agregarNivelImpacto() {
+  const id = prompt("ID técnico del nivel (sin espacios):");
+  if (!id) return;
+  const label = prompt("Etiqueta del nivel:");
+  if (!label) return;
+  const color = prompt("Color HEX (#RRGGBB):", "#64748b") || "#64748b";
+  const antes = JSON.parse(JSON.stringify(baseDatos.configuracion.nivelesImpacto));
+  baseDatos.configuracion.nivelesImpacto.push({ id: id.trim(), label: label.trim(), color: color.trim(), orden: getNivelesImpacto().length + 1 });
+  guardarDatosBIA(baseDatos);
+  registrarCambioCatalogoNiveles(antes, baseDatos.configuracion.nivelesImpacto, "alta");
+  renderizarTablaNivelesImpacto();
+}
+function editarColorNivel(id, color) {
+  const antes = JSON.parse(JSON.stringify(baseDatos.configuracion.nivelesImpacto));
+  const nivel = baseDatos.configuracion.nivelesImpacto.find(n => n.id === id);
+  if (!nivel) return;
+  nivel.color = color;
+  guardarDatosBIA(baseDatos);
+  registrarCambioCatalogoNiveles(antes, baseDatos.configuracion.nivelesImpacto, `edición color ${id}`);
+  cargarDetalleProceso(idProcesoActivo);
+}
+function eliminarNivelImpacto(id) {
+  if (getNivelesImpacto().length <= 2) return alert("Debe mantener al menos dos niveles.");
+  const antes = JSON.parse(JSON.stringify(baseDatos.configuracion.nivelesImpacto));
+  baseDatos.configuracion.nivelesImpacto = baseDatos.configuracion.nivelesImpacto.filter(n => n.id !== id).map((n,i)=>({...n, orden:i+1}));
+  migrarNivelesEnProcesos();
+  guardarDatosBIA(baseDatos);
+  registrarCambioCatalogoNiveles(antes, baseDatos.configuracion.nivelesImpacto, `baja ${id}`);
+  renderizarTablaNivelesImpacto();
+  cargarDetalleProceso(idProcesoActivo);
+}
+function moverNivel(id, delta) {
+  const arr = getNivelesImpacto();
+  const idx = arr.findIndex(n=>n.id===id);
+  const dest = idx + delta;
+  if (idx < 0 || dest < 0 || dest >= arr.length) return;
+  const antes = JSON.parse(JSON.stringify(baseDatos.configuracion.nivelesImpacto));
+  [arr[idx], arr[dest]] = [arr[dest], arr[idx]];
+  arr.forEach((n,i)=>n.orden=i+1);
+  baseDatos.configuracion.nivelesImpacto = arr;
+  guardarDatosBIA(baseDatos);
+  registrarCambioCatalogoNiveles(antes, baseDatos.configuracion.nivelesImpacto, `reordenamiento ${id}`);
+  renderizarTablaNivelesImpacto();
+}
+function migrarNivelesEnProcesos() {
+  const ids = new Set(getNivelesImpacto().map(n=>n.id));
+  const fallback = getNivelesImpacto()[0]?.id;
+  baseDatos.procesos.forEach(p => ["impactoColmedica","impactoAliansalud"].forEach(cl => {
+    ["financiero","operacional","legal","reputacional"].forEach(cat => {
+      p[cl][cat] = (p[cl][cat] || []).map(v => ids.has(v) ? v : fallback);
+    });
+  }));
 }
 
 // Sugerencia inteligente de RTO según mejores prácticas ISO 22301
@@ -893,7 +932,7 @@ function verDetalleSnapshot(snapId) {
         <td><strong>${p.nombreProceso}</strong><br><span style="font-size:0.72rem;color:var(--text-muted)">${p.nombreSubproceso}</span></td>
         <td><span class="colmedica-badge">${p.impactoColmedica.rto}</span></td>
         <td><span class="aliansalud-badge">${p.impactoAliansalud.rto}</span></td>
-        ${nivelesCol.map(arr => arr.map(n => `<td><div class="matrix-cell ${n}" style="pointer-events:none;height:36px;font-size:0.7rem;">${NIVELES_IMPACTO[n].texto}</div></td>`).join("")).join("")}
+        ${nivelesCol.map(arr => arr.map(n => `<td><div class="matrix-cell" style="--impact-color:${getNivelImpactoMap()[n]?.color || "#64748b"};pointer-events:none;height:36px;font-size:0.7rem;">${getNivelImpactoMap()[n]?.label || n}</div></td>`).join("")).join("")}
       </tr>`;
   }).join("");
 
