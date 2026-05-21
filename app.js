@@ -8,6 +8,22 @@ let idProcesoActivo = '';
 let transicionGuardadoPendiente = null; // Almacena el callback de guardado antes de pedir justificación
 
 // Mapeo de colores y textos para niveles de impacto
+
+const ESCALAS_RECUPERACION = [
+  "0 horas",
+  "1 hora",
+  "2 horas",
+  "4 horas",
+  "8 horas",
+  "24 horas",
+  "48 horas",
+  "72 horas",
+  "5 días",
+  "1 semana",
+  "2 semanas",
+  "3 semanas"
+];
+
 const NIVELES_IMPACTO = {
   minimo: { texto: "Mínimo", clase: "minimo", color: "#10b981" },
   moderado: { texto: "Moderado", clase: "moderado", color: "#eab308" },
@@ -540,11 +556,24 @@ function renderizarMatrizImpacto(tipo, impactosObj) {
   // Función helper para abrir editor de métricas
   const abrirEditorMetrica = (campo) => {
     const valorActual = impactosObj[campo] || "";
-    const nuevoValor = prompt(`Ingrese el nuevo valor para ${campo.toUpperCase()} (actual: ${valorActual})`);
+    const opcionesEscala = campo === 'rpo'
+      ? ['N/A', ...ESCALAS_RECUPERACION]
+      : ESCALAS_RECUPERACION;
+    const nuevoValor = prompt(
+      `Ingrese el nuevo valor para ${campo.toUpperCase()} (actual: ${valorActual})\n\nEscalas permitidas:\n- ${opcionesEscala.join('\n- ')}`
+    );
     if (nuevoValor === null) return; // usuario canceló
+
+    const valorNormalizado = nuevoValor.trim();
+    if (!valorNormalizado) return;
+    if (!opcionesEscala.includes(valorNormalizado)) {
+      alert(`Valor no válido para ${campo.toUpperCase()}. Use una de las escalas definidas.`);
+      return;
+    }
+
     // Guardar cambio pendiente con justificación
     const aplicarCambio = () => {
-      impactosObj[campo] = nuevoValor.trim() || "";
+      impactosObj[campo] = valorNormalizado;
       // Recalcular sugerencias si se cambia RTO
       if (campo === 'rto' || campo === 'mtpd') sugerirRTODinamico(tipo, impactosObj);
       guardarDatosBIA(baseDatos);
